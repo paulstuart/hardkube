@@ -1,0 +1,14 @@
+#!/bin/bash
+
+kubectl get nodes; exit 
+kubectl get nodes \
+  --output=jsonpath='{range .items[*]}{.status.addresses[?(@.type=="InternalIP")].address} {.spec.podCIDR} {"\n"}{end}'
+
+gnet() {
+   label=${2//[^0-9]/-}
+    gcloud compute routes create kubernetes-route-$label \
+      --network kubernetes \
+      --next-hop-address $1 \
+      --destination-range $2
+
+

@@ -1,0 +1,27 @@
+#!/bin/sh
+
+PASSWORD=`awk -F',' '$2 == "admin" {print $1}' token.csv`
+
+CA=certs/FILES/ca.pem
+
+KUBERNETES_PUBLIC_ADDRESS=`gcloud compute addresses describe kubernetes \
+      --format 'value(address)'`
+
+#echo K: $KUBERNETES_PUBLIC_ADDRESS; exit
+kubectl config set-cluster kubernetes-the-hard-way \
+  --certificate-authority=$CA \
+  --embed-certs=true \
+  --server=https://${KUBERNETES_PUBLIC_ADDRESS}:6443
+
+kubectl config set-credentials admin --token $PASSWORD
+
+kubectl config set-context default-context \
+  --cluster=kubernetes-the-hard-way \
+  --user=admin
+
+kubectl config use-context default-context
+
+# At this point you should be able to connect securly to the remote API server:
+
+kubectl get componentstatuses
+
